@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <title>Chat App</title>
+
+  <link rel="stylesheet"
+  href="style.css">
+
+</head>
+<body>
+
+<div class="app">
+
+  <div class="sidebar">
+
+    <div class="top-sidebar">
+
+      <h2>
+        Chats
+      </h2>
+
+      <button onclick="openSettings()">
+        ⚙️
+      </button>
+
+    </div>
+
+    <div id="chatList">
+
+    </div>
+
+  </div>
+
+  <div class="chat-area">
+
+    <div class="chat-header">
+
+      <div>
+
+        <span id="chatUsername">
+          Pilih Chat
+        </span>
+
+        <span id="badgeArea">
+
+        </span>
+
+      </div>
+
+    </div>
+
+    <div id="messages">
+
+    </div>
+
+    <div class="chat-input">
+
+      <input
+       type="text"
+       id="messageInput"
+       placeholder="Ketik pesan..."
+      >
+
+      <button onclick="sendMessage()">
+        Kirim
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div id="settingsPopup"
+class="popup">
+
+ <div class="popup-box">
+
+  <h2>
+    Menu
+  </h2>
+
+  <button onclick="addContact()">
+    Tambahkan Kontak
+  </button>
+
+  <button onclick="createGroup()">
+    Buat Grup
+  </button>
+
+  <button onclick="openProfile()">
+    Profil
+  </button>
+
+  <button onclick="logout()">
+    Logout
+  </button>
+
+ </div>
+
+</div>
+
+<script type="module"
+src="firebase.js"></script>
+
+<script type="module"
+src="app.js"></script>
+
+</body>
+</html>
