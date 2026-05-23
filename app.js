@@ -141,7 +141,7 @@ function loadMessages(){
    activeChat
   ),
 
-  orderBy("createdAt")
+  orderBy("createdAt","asc")
  );
 
  onSnapshot(q,(snapshot)=>{
@@ -157,6 +157,10 @@ function loadMessages(){
 
    const data =
    docSnap.data();
+
+   if(!data.createdAt){
+    return;
+   }
 
    const div =
    document.createElement("div");
@@ -364,11 +368,68 @@ async function(){
   return;
  }
 
- alert(
-  "Kontak berhasil ditemukan"
- );
+ snap.forEach(async(docSnap)=>{
 
- loadContacts();
+  const data =
+  docSnap.data();
+
+  if(
+   docSnap.id ===
+   auth.currentUser.uid
+  ){
+   return;
+  }
+
+  const div =
+  document.createElement("div");
+
+  div.className =
+  "chat-item";
+
+  div.innerHTML =
+
+  data.username +
+
+  (
+   data.verified
+   ?
+   " ✔"
+   :
+   ""
+  ) +
+
+  (
+   data.admin
+   ?
+   " ADMIN"
+   :
+   ""
+  );
+
+  div.onclick = ()=>{
+
+   activeChat =
+   createPrivateChatId(
+    auth.currentUser.uid,
+    docSnap.id
+   );
+
+   document.getElementById(
+   "chatUsername"
+   ).innerText =
+   data.username;
+
+   loadMessages();
+  };
+
+  document.getElementById(
+  "chatList"
+  ).appendChild(div);
+ });
+
+ alert(
+  "Kontak berhasil ditambahkan"
+ );
 }
 
 window.createGroup =
@@ -383,23 +444,35 @@ async function(){
   return;
  }
 
- await addDoc(
+ const groupId =
+ "group_" +
+ Date.now();
 
-  collection(
-   db,
-   "groups"
-  ),
+ const div =
+ document.createElement("div");
 
-  {
-   name,
+ div.className =
+ "chat-item";
 
-   owner:
-   auth.currentUser.uid,
+ div.innerHTML =
+ "👥 " + name;
 
-   createdAt:
-   serverTimestamp()
-  }
- );
+ div.onclick = ()=>{
+
+  activeChat =
+  groupId;
+
+  document.getElementById(
+  "chatUsername"
+  ).innerText =
+  name;
+
+  loadMessages();
+ };
+
+ document.getElementById(
+ "chatList"
+ ).appendChild(div);
 
  alert(
   "Grup berhasil dibuat"
@@ -580,11 +653,11 @@ async function(){
  "index.html";
 }
 
-window.openSettings =
+window.closeSettings =
 function(){
 
  document.getElementById(
  "settingsPopup"
  ).style.display =
- "flex";
+ "none";
 }
