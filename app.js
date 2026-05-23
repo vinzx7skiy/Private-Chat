@@ -29,7 +29,13 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 let currentUserData;
 
-let activeChat = "global";
+let activeChat = null;
+
+let unsubscribeMessages = null;
+
+/* =========================
+   ENCRYPTION
+========================= */
 
 function encrypt(text){
 
@@ -38,8 +44,19 @@ function encrypt(text){
 
 function decrypt(text){
 
- return atob(text);
+ try{
+
+  return atob(text);
+
+ }catch{
+
+  return text;
+ }
 }
+
+/* =========================
+   AUTH
+========================= */
 
 onAuthStateChanged(
  auth,
@@ -48,13 +65,19 @@ onAuthStateChanged(
  if(user){
 
   const ref =
-  doc(db,"users",user.uid);
+  doc(
+   db,
+   "users",
+   user.uid
+  );
 
   const snap =
   await getDoc(ref);
 
   currentUserData =
   snap.data();
+
+  /* BANNED */
 
   if(currentUserData.banned){
 
@@ -67,6 +90,8 @@ onAuthStateChanged(
 
    return;
   }
+
+  /* SUSPEND */
 
   if(
    currentUserData.suspended
@@ -113,8 +138,6 @@ onAuthStateChanged(
    ""
   );
 
-  loadMessages();
-
   loadContacts();
 
   loadAnnouncement();
@@ -126,7 +149,127 @@ onAuthStateChanged(
  }
 });
 
+/* =========================
+   LOAD CONTACTS
+========================= */
+
+async function loadContacts(){
+
+ const q =
+ query(
+  collection(db,"users")
+ );
+
+ const snap =
+ await getDocs(q);
+
+ const list =
+ document.getElementById(
+ "chatList"
+ );
+
+ list.innerHTML = "";
+
+ snap.forEach(docSnap=>{
+
+  const data =
+  docSnap.data();
+
+  if(
+   docSnap.id ===
+   auth.currentUser.uid
+  ){
+   return;
+  }
+
+  const div =
+  document.createElement("div");
+
+  div.className =
+  "chat-item";
+
+  div.innerHTML =
+
+  data.username +
+
+  (
+   data.verified
+   ?
+   " ✔"
+   :
+   ""
+  ) +
+
+  (
+   data.admin
+   ?
+   " ADMIN"
+   :
+   ""
+  );
+
+  div.onclick = ()=>{
+
+   activeChat =
+   createPrivateChatId(
+    auth.currentUser.uid,
+    docSnap.id
+   );
+
+   document.getElementById(
+   "chatUsername"
+   ).innerHTML =
+
+   data.username +
+
+   (
+    data.verified
+    ?
+    " ✔"
+    :
+    ""
+   ) +
+
+   (
+    data.admin
+    ?
+    " ADMIN"
+    :
+    ""
+   );
+
+   loadMessages();
+  };
+
+  list.appendChild(div);
+ });
+}
+
+/* =========================
+   PRIVATE CHAT ID
+========================= */
+
+function createPrivateChatId(a,b){
+
+ return [a,b]
+ .sort()
+ .join("_");
+}
+
+/* =========================
+   LOAD MESSAGES
+========================= */
+
 function loadMessages(){
+
+ if(!activeChat){
+  return;
+ }
+
+ if(unsubscribeMessages){
+
+  unsubscribeMessages();
+ }
 
  const q = query(
 
@@ -141,9 +284,13 @@ function loadMessages(){
    activeChat
   ),
 
-  orderBy("createdAt","asc")
+  orderBy(
+   "createdAt",
+   "asc"
+  )
  );
 
+ unsubscribeMessages =
  onSnapshot(q,(snapshot)=>{
 
   const messages =
@@ -195,15 +342,31 @@ function loadMessages(){
  });
 }
 
+/* =========================
+   SEND MESSAGE
+========================= */
+
 window.sendMessage =
 async function(){
+
+ if(!activeChat){
+
+  alert(
+   "Pilih chat terlebih dahulu"
+  );
+
+  return;
+ }
 
  const input =
  document.getElementById(
  "messageInput"
  );
 
- if(input.value === ""){
+ const text =
+ input.value.trim();
+
+ if(text === ""){
   return;
  }
 
@@ -215,10 +378,11 @@ async function(){
   ),
 
   {
-   chatId:activeChat,
+   chatId:
+   activeChat,
 
    text:
-   encrypt(input.value),
+   encrypt(text),
 
    username:
    currentUserData.username,
@@ -234,104 +398,25 @@ async function(){
  input.value = "";
 }
 
+/* =========================
+   DELETE MESSAGE
+========================= */
+
 window.deleteMessage =
 async function(id){
 
  await deleteDoc(
-  doc(db,"messages",id)
+  doc(
+   db,
+   "messages",
+   id
+  )
  );
 }
 
-window.openGlobalChat =
-function(){
-
- activeChat =
- "global";
-
- loadMessages();
-}
-
-async function loadContacts(){
-
- const q = query(
-  collection(db,"users")
- );
-
- const snap =
- await getDocs(q);
-
- const list =
- document.getElementById(
- "chatList"
- );
-
- list.innerHTML =
-
- `
- <div class="chat-item"
- onclick="openGlobalChat()">
-
- 🌍 Global Chat
-
- </div>
- `;
-
- snap.forEach(docSnap=>{
-
-  const data =
-  docSnap.data();
-
-  if(
-   data.contactCode ===
-   currentUserData.contactCode
-  ){
-   return;
-  }
-
-  const div =
-  document.createElement("div");
-
-  div.className =
-  "chat-item";
-
-  div.innerHTML =
-
-  data.username +
-
-  (
-   data.verified
-   ?
-   " ✔"
-   :
-   ""
-  );
-
-  div.onclick = ()=>{
-
-   activeChat =
-   createPrivateChatId(
-    auth.currentUser.uid,
-    docSnap.id
-   );
-
-   document.getElementById(
-   "chatUsername"
-   ).innerText =
-   data.username;
-
-   loadMessages();
-  };
-
-  list.appendChild(div);
- });
-}
-
-function createPrivateChatId(a,b){
-
- return [a,b]
- .sort()
- .join("_");
-}
+/* =========================
+   ADD CONTACT
+========================= */
 
 window.addContact =
 async function(){
@@ -368,69 +453,16 @@ async function(){
   return;
  }
 
- snap.forEach(async(docSnap)=>{
-
-  const data =
-  docSnap.data();
-
-  if(
-   docSnap.id ===
-   auth.currentUser.uid
-  ){
-   return;
-  }
-
-  const div =
-  document.createElement("div");
-
-  div.className =
-  "chat-item";
-
-  div.innerHTML =
-
-  data.username +
-
-  (
-   data.verified
-   ?
-   " ✔"
-   :
-   ""
-  ) +
-
-  (
-   data.admin
-   ?
-   " ADMIN"
-   :
-   ""
-  );
-
-  div.onclick = ()=>{
-
-   activeChat =
-   createPrivateChatId(
-    auth.currentUser.uid,
-    docSnap.id
-   );
-
-   document.getElementById(
-   "chatUsername"
-   ).innerText =
-   data.username;
-
-   loadMessages();
-  };
-
-  document.getElementById(
-  "chatList"
-  ).appendChild(div);
- });
-
  alert(
   "Kontak berhasil ditambahkan"
  );
+
+ loadContacts();
 }
+
+/* =========================
+   CREATE GROUP
+========================= */
 
 window.createGroup =
 async function(){
@@ -479,6 +511,10 @@ async function(){
  );
 }
 
+/* =========================
+   ANNOUNCEMENT
+========================= */
+
 function loadAnnouncement(){
 
  onSnapshot(
@@ -502,6 +538,10 @@ function loadAnnouncement(){
   }
  );
 }
+
+/* =========================
+   PROFILE
+========================= */
 
 window.openProfile =
 function(){
@@ -536,6 +576,15 @@ function(){
  "Role: USER";
 }
 
+window.closeProfile =
+function(){
+
+ document.getElementById(
+ "profilePopup"
+ ).style.display =
+ "none";
+}
+
 window.copyContactCode =
 function(){
 
@@ -548,14 +597,9 @@ function(){
  );
 }
 
-window.closeProfile =
-function(){
-
- document.getElementById(
- "profilePopup"
- ).style.display =
- "none";
-}
+/* =========================
+   CHANGE USERNAME
+========================= */
 
 window.changeUsername =
 async function(){
@@ -578,7 +622,8 @@ async function(){
   ),
 
   {
-   username:newUsername
+   username:
+   newUsername
   }
  );
 
@@ -588,6 +633,10 @@ async function(){
 
  location.reload();
 }
+
+/* =========================
+   CHANGE PASSWORD
+========================= */
 
 window.changePassword =
 async function(){
@@ -644,13 +693,17 @@ async function(){
  );
 }
 
-window.logout =
-async function(){
+/* =========================
+   SETTINGS
+========================= */
 
- await signOut(auth);
+window.openSettings =
+function(){
 
- location.href =
- "index.html";
+ document.getElementById(
+ "settingsPopup"
+ ).style.display =
+ "flex";
 }
 
 window.closeSettings =
@@ -660,4 +713,17 @@ function(){
  "settingsPopup"
  ).style.display =
  "none";
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+window.logout =
+async function(){
+
+ await signOut(auth);
+
+ location.href =
+ "index.html";
 }

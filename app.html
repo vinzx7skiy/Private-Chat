@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<!-- ANNOUNCEMENT -->
+
 <div id="announcementBar"
 class="announcement-bar">
 
@@ -17,7 +19,11 @@ class="announcement-bar">
 
 </div>
 
+<!-- APP -->
+
 <div class="app">
+
+  <!-- SIDEBAR -->
 
   <div class="sidebar">
 
@@ -27,11 +33,16 @@ class="announcement-bar">
         Chats
       </h2>
 
-      <button onclick="openSettings()">
+      <button
+      onclick="openSettings()">
+
         ⚙️
+
       </button>
 
     </div>
+
+    <!-- CHAT LIST -->
 
     <div id="chatList">
 
@@ -39,25 +50,29 @@ class="announcement-bar">
 
   </div>
 
+  <!-- CHAT AREA -->
+
   <div class="chat-area">
+
+    <!-- HEADER -->
 
     <div class="chat-header">
 
-      <div>
+      <span id="chatUsername">
 
-        <span id="chatUsername">
+        Pilih Chat
 
-          Pilih Chat
-
-        </span>
-
-      </div>
+      </span>
 
     </div>
+
+    <!-- MESSAGES -->
 
     <div id="messages">
 
     </div>
+
+    <!-- INPUT -->
 
     <div class="chat-input">
 
@@ -67,8 +82,11 @@ class="announcement-bar">
        placeholder="Ketik pesan..."
       >
 
-      <button onclick="sendMessage()">
+      <button
+      onclick="sendMessage()">
+
         Kirim
+
       </button>
 
     </div>
@@ -77,7 +95,7 @@ class="announcement-bar">
 
 </div>
 
-<!-- SETTINGS -->
+<!-- SETTINGS POPUP -->
 
 <div id="settingsPopup"
 class="popup">
@@ -88,31 +106,46 @@ class="popup">
     Menu
   </h2>
 
-  <button onclick="addContact()">
+  <button
+  onclick="addContact()">
+
     Tambahkan Kontak
+
   </button>
 
-  <button onclick="createGroup()">
+  <button
+  onclick="createGroup()">
+
     Buat Grup
+
   </button>
 
-  <button onclick="openProfile()">
+  <button
+  onclick="openProfile()">
+
     Profil
+
   </button>
 
-  <button onclick="logout()">
-    Logout
+  <button
+  onclick="closeSettings()">
+
+    Tutup
+
   </button>
-  
-  <button onclick="closeSettings()">
- Tutup
-</button>
+
+  <button
+  onclick="logout()">
+
+    Logout
+
+  </button>
 
  </div>
 
 </div>
 
-<!-- PROFILE -->
+<!-- PROFILE POPUP -->
 
 <div id="profilePopup"
 class="popup">
@@ -132,20 +165,32 @@ class="popup">
   <p id="profileRole">
   </p>
 
-  <button onclick="copyContactCode()">
+  <button
+  onclick="copyContactCode()">
+
    Copy Kode Kontak
+
   </button>
 
-  <button onclick="changeUsername()">
+  <button
+  onclick="changeUsername()">
+
    Ganti Username
+
   </button>
 
-  <button onclick="changePassword()">
+  <button
+  onclick="changePassword()">
+
    Ganti Password
+
   </button>
 
-  <button onclick="closeProfile()">
+  <button
+  onclick="closeProfile()">
+
    Tutup
+
   </button>
 
  </div>
