@@ -267,16 +267,12 @@ function loadMessages(){
  }
 
  if(unsubscribeMessages){
-
   unsubscribeMessages();
  }
 
  const q = query(
 
-  collection(
-   db,
-   "messages"
-  ),
+  collection(db,"messages"),
 
   where(
    "chatId",
@@ -293,12 +289,12 @@ function loadMessages(){
  unsubscribeMessages =
  onSnapshot(q,(snapshot)=>{
 
-  const messages =
+  const container =
   document.getElementById(
   "messages"
   );
 
-  messages.innerHTML = "";
+  container.innerHTML = "";
 
   snapshot.forEach(docSnap=>{
 
@@ -313,6 +309,10 @@ function loadMessages(){
    document.createElement("div");
 
    div.className =
+   data.uid === auth.currentUser.uid
+   ?
+   "my-message"
+   :
    "message";
 
    div.innerHTML =
@@ -323,22 +323,13 @@ function loadMessages(){
    <br>
 
    ${decrypt(data.text)}
-
-   <br><br>
-
-   <button
-   onclick="deleteMessage('${docSnap.id}')">
-
-   Hapus
-
-   </button>
    `;
 
-   messages.appendChild(div);
+   container.appendChild(div);
   });
 
-  messages.scrollTop =
-  messages.scrollHeight;
+  container.scrollTop =
+  container.scrollHeight;
  });
 }
 
@@ -352,7 +343,7 @@ async function(){
  if(!activeChat){
 
   alert(
-   "Pilih chat terlebih dahulu"
+   "Pilih chat dulu"
   );
 
   return;
@@ -478,7 +469,7 @@ async function(){
 
  const groupId =
  "group_" +
- Date.now();
+ crypto.randomUUID();
 
  const div =
  document.createElement("div");

@@ -106,18 +106,29 @@ button{
  padding:20px;
 }
 
-.message{
-
- background:#2563eb;
-
+.typing-status{
  padding:10px;
+ color:#94a3b8;
+ font-size:14px;
+}
 
+.my-message{
+ background:#2563eb;
+ padding:10px;
  border-radius:10px;
-
- margin-top:10px;
-
+ margin:10px;
+ color:white;
+ margin-left:auto;
  width:fit-content;
+ max-width:70%;
+}
 
+.message{
+ background:#1e293b;
+ padding:10px;
+ border-radius:10px;
+ margin:10px;
+ width:fit-content;
  max-width:70%;
 }
 
