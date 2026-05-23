@@ -14,7 +14,6 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
  doc,
  getDoc,
- setDoc,
  updateDoc,
  deleteDoc,
  collection,
@@ -31,8 +30,6 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 let currentUserData;
 
 let activeChat = "global";
-
-let activeChatName = "Global Chat";
 
 function encrypt(text){
 
@@ -71,10 +68,13 @@ onAuthStateChanged(
    return;
   }
 
-  if(currentUserData.suspended){
+  if(
+   currentUserData.suspended
+  ){
 
    if(
-    Date.now() <
+    Date.now()
+    <
     currentUserData.suspendUntil
    ){
 
@@ -100,9 +100,7 @@ onAuthStateChanged(
   (
    currentUserData.verified
    ?
-   `<span class='verified'>
-   ✔
-   </span>`
+   " ✔"
    :
    ""
   ) +
@@ -110,9 +108,7 @@ onAuthStateChanged(
   (
    currentUserData.admin
    ?
-   `<span class='admin-badge'>
-   ADMIN
-   </span>`
+   " ADMIN"
    :
    ""
   );
@@ -129,16 +125,6 @@ onAuthStateChanged(
   "index.html";
  }
 });
-
-function encrypt(text){
-
- return btoa(text);
-}
-
-function decrypt(text){
-
- return atob(text);
-}
 
 function loadMessages(){
 
@@ -180,15 +166,22 @@ function loadMessages(){
 
    div.innerHTML =
 
-   `<b>${data.username}</b><br>
+   `
+   <b>${data.username}</b>
+
+   <br>
 
    ${decrypt(data.text)}
 
    <br><br>
 
-   <button onclick="deleteMessage('${docSnap.id}')">
+   <button
+   onclick="deleteMessage('${docSnap.id}')">
+
    Hapus
-   </button>`;
+
+   </button>
+   `;
 
    messages.appendChild(div);
   });
@@ -251,14 +244,6 @@ function(){
  activeChat =
  "global";
 
- activeChatName =
- "Global Chat";
-
- document.getElementById(
- "chatUsername"
- ).innerText =
- activeChatName;
-
  loadMessages();
 }
 
@@ -315,14 +300,6 @@ async function loadContacts(){
    " ✔"
    :
    ""
-  ) +
-
-  (
-   data.admin
-   ?
-   " ADMIN"
-   :
-   ""
   );
 
   div.onclick = ()=>{
@@ -333,13 +310,10 @@ async function loadContacts(){
     docSnap.id
    );
 
-   activeChatName =
-   data.username;
-
    document.getElementById(
    "chatUsername"
    ).innerText =
-   activeChatName;
+   data.username;
 
    loadMessages();
   };
@@ -391,7 +365,7 @@ async function(){
  }
 
  alert(
-  "Kontak berhasil ditambahkan"
+  "Kontak berhasil ditemukan"
  );
 
  loadContacts();
@@ -475,7 +449,7 @@ function(){
  "profileCode"
  ).innerText =
 
- "Kode Kontak: "
+ "Kode Kontak Saya: "
  + currentUserData.contactCode;
 
  document.getElementById(
@@ -487,6 +461,18 @@ function(){
  "Role: ADMIN"
  :
  "Role: USER";
+}
+
+window.copyContactCode =
+function(){
+
+ navigator.clipboard.writeText(
+  currentUserData.contactCode
+ );
+
+ alert(
+  "Kode kontak disalin"
+ );
 }
 
 window.closeProfile =
