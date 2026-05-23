@@ -65,7 +65,30 @@ onAuthStateChanged(
 
    await signOut(auth);
 
+   location.href =
+   "index.html";
+
    return;
+  }
+
+  if(currentUserData.suspended){
+
+   if(
+    Date.now() <
+    currentUserData.suspendUntil
+   ){
+
+    alert(
+     "Akun sedang disuspend"
+    );
+
+    await signOut(auth);
+
+    location.href =
+    "index.html";
+
+    return;
+   }
   }
 
   document.getElementById(
@@ -98,12 +121,24 @@ onAuthStateChanged(
 
   loadContacts();
 
+  loadAnnouncement();
+
  }else{
 
   location.href =
   "index.html";
  }
 });
+
+function encrypt(text){
+
+ return btoa(text);
+}
+
+function decrypt(text){
+
+ return atob(text);
+}
 
 function loadMessages(){
 
@@ -219,6 +254,11 @@ function(){
  activeChatName =
  "Global Chat";
 
+ document.getElementById(
+ "chatUsername"
+ ).innerText =
+ activeChatName;
+
  loadMessages();
 }
 
@@ -235,6 +275,17 @@ async function loadContacts(){
  document.getElementById(
  "chatList"
  );
+
+ list.innerHTML =
+
+ `
+ <div class="chat-item"
+ onclick="openGlobalChat()">
+
+ 🌍 Global Chat
+
+ </div>
+ `;
 
  snap.forEach(docSnap=>{
 
@@ -262,6 +313,14 @@ async function loadContacts(){
    data.verified
    ?
    " ✔"
+   :
+   ""
+  ) +
+
+  (
+   data.admin
+   ?
+   " ADMIN"
    :
    ""
   );
@@ -373,95 +432,157 @@ async function(){
  );
 }
 
+function loadAnnouncement(){
+
+ onSnapshot(
+
+  doc(
+   db,
+   "system",
+   "announcement"
+  ),
+
+  (snap)=>{
+
+   if(snap.exists()){
+
+    document.getElementById(
+    "announcementBar"
+    ).innerText =
+
+    snap.data().text;
+   }
+  }
+ );
+}
+
 window.openProfile =
+function(){
+
+ document.getElementById(
+ "profilePopup"
+ ).style.display =
+ "flex";
+
+ document.getElementById(
+ "profileUsername"
+ ).innerText =
+
+ "Username: "
+ + currentUserData.username;
+
+ document.getElementById(
+ "profileCode"
+ ).innerText =
+
+ "Kode Kontak: "
+ + currentUserData.contactCode;
+
+ document.getElementById(
+ "profileRole"
+ ).innerText =
+
+ currentUserData.admin
+ ?
+ "Role: ADMIN"
+ :
+ "Role: USER";
+}
+
+window.closeProfile =
+function(){
+
+ document.getElementById(
+ "profilePopup"
+ ).style.display =
+ "none";
+}
+
+window.changeUsername =
 async function(){
 
  const newUsername =
  prompt(
-
- "Username baru\n\nUsername sekarang: "
- + currentUserData.username
+  "Username baru"
  );
 
- if(newUsername){
+ if(!newUsername){
+  return;
+ }
 
-  await updateDoc(
+ await updateDoc(
 
-   doc(
-    db,
-    "users",
-    auth.currentUser.uid
-   ),
+  doc(
+   db,
+   "users",
+   auth.currentUser.uid
+  ),
 
-   {
-    username:newUsername
-   }
-  );
+  {
+   username:newUsername
+  }
+ );
+
+ alert(
+  "Username berhasil diubah"
+ );
+
+ location.reload();
+}
+
+window.changePassword =
+async function(){
+
+ const last =
+ currentUserData.lastPasswordChange
+ || 0;
+
+ const month =
+ 2592000000;
+
+ if(
+  Date.now() - last <
+  month
+ ){
 
   alert(
-   "Username berhasil diubah"
+   "Password hanya bisa diganti 1 bulan sekali"
   );
 
-  location.reload();
+  return;
  }
 
- const change =
- confirm(
- "Ganti password?"
+ const newPass =
+ prompt(
+  "Password baru"
  );
 
- if(change){
-
-  const last =
-  currentUserData.lastPasswordChange
-  || 0;
-
-  const month =
-  2592000000;
-
-  if(
-   Date.now() - last <
-   month
-  ){
-
-   alert(
-    "Password hanya bisa diganti 1 bulan sekali"
-   );
-
-   return;
-  }
-
-  const newPass =
-  prompt(
-   "Password baru"
-  );
-
-  if(newPass){
-
-   await updatePassword(
-    auth.currentUser,
-    newPass
-   );
-
-   await updateDoc(
-
-    doc(
-     db,
-     "users",
-     auth.currentUser.uid
-    ),
-
-    {
-     lastPasswordChange:
-     Date.now()
-    }
-   );
-
-   alert(
-    "Password berhasil diubah"
-   );
-  }
+ if(!newPass){
+  return;
  }
+
+ await updatePassword(
+  auth.currentUser,
+  newPass
+ );
+
+ await updateDoc(
+
+  doc(
+   db,
+   "users",
+   auth.currentUser.uid
+  ),
+
+  {
+   lastPasswordChange:
+   Date.now()
+  }
+ );
+
+ alert(
+  "Password berhasil diubah"
+ );
 }
 
 window.logout =
