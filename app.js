@@ -712,7 +712,7 @@ function(){
  document.getElementById(
  "settingsPopup"
  ).style.display =
- "flex";
+ "none";
 }
 
 /* =========================
